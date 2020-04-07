@@ -1,27 +1,27 @@
 package pl.myApp.library.app;
 
+import pl.myApp.library.app.exceptions.NoSuchOptionException;
+import pl.myApp.library.io.ConsolePrinter;
 import pl.myApp.library.io.DataReader;
 import pl.myApp.library.model.Book;
 import pl.myApp.library.model.Library;
 import pl.myApp.library.model.Magazine;
+import pl.myApp.library.model.Publication;
+
+import java.util.InputMismatchException;
 
 public class LibraryControl {
 
-    private static final int EXIT = 0;
-    private static final int ADD_BOOK = 1;
-    private static final int ADD_MAGAZINE = 2;
-    private static final int PRINT_BOOKS = 3;
-    private static final int PRINT_MAGAZINES = 4;
-
+    private ConsolePrinter printer = new ConsolePrinter();
     private DataReader dataReader = new DataReader();
     private Library library = new Library();
 
     public void controlLoop() {
-        int option;
+        Option option;
 
         do {
             printOption();
-            option = dataReader.getInt();
+            option = getOption();
             switch (option) {
                 case ADD_BOOK:
                     addBook();
@@ -39,13 +39,29 @@ public class LibraryControl {
                     exit();
                     break;
                 default:
-                    System.out.println("Wybrano błędną opcje!");
+                    printer.printLine("Wybrano błędną opcje!");
             }
-        } while (option != EXIT);
+        } while (option != Option.EXIT);
+    }
+
+    private Option getOption() {
+        boolean optionOk = false;
+        Option option = null;
+        while (!optionOk) {
+            try {
+                option = Option.createFromInt(dataReader.getInt());
+                optionOk = true;
+            } catch (NoSuchOptionException e) {
+                printer.printLine(e.getMessage());
+            } catch (InputMismatchException e) {
+                printer.printLine("Wprowadzono wartość która nie jest liczbą!");
+            }
+        }
+        return option;
     }
 
     private void exit() {
-        System.out.println("Do widzenia!");
+        printer.printLine("Do widzenia!");
         dataReader.close();
     }
 
@@ -60,20 +76,20 @@ public class LibraryControl {
     }
 
     private void printBooks() {
-        library.printBooks();
+        Publication[] publications = library.getPublications();
+        printer.printBooks(publications);
     }
 
     private void printMagazines() {
-        library.printMagazines();
+        Publication[] publications = library.getPublications();
+        printer.printMagazines(publications);
     }
 
     private void printOption() {
-        System.out.println("Wybierz opcje programu: ");
-        System.out.println(EXIT + " - wyjście z programu");
-        System.out.println(ADD_BOOK + " - dodanie nowej książki");
-        System.out.println(ADD_MAGAZINE + " - dodanie nowego magazynu");
-        System.out.println(PRINT_BOOKS + " - wyświetl dostępne książki");
-        System.out.println(PRINT_MAGAZINES + " - wyświetl dostępne magazyny");
+        printer.printLine("Wybierz opcje programu: ");
+        for (Option option : Option.values()) {
+            printer.printLine(option.toString());
+        }
     }
 
 }

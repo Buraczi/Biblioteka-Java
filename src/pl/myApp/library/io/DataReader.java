@@ -48,9 +48,11 @@ public class DataReader {
     }
 
     public int getInt() {
-        int number = reader.nextInt();
-        reader.nextLine();
-        return number;
+        try {
+            return reader.nextInt();
+        } finally {
+            reader.nextLine();
+        }
     }
 
     public void close() {
